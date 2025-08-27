@@ -1,0 +1,15 @@
+# PLAD-T default configuration
+run_mode: quick_test  # options: quick_test, suite
+images_dir: .research/iteration1/images
+
+quick_test:
+  total_steps: 40
+  phase1_frac: 0.6
+  activate_every: 20
+  distill_steps_per_pair: 5
+
+suite:
+  total_steps: 120
+  phase1_frac: 0.6
+  activate_every: 40
+  distill_steps_per_pair: 10
