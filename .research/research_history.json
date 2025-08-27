@@ -6,5 +6,82 @@
     "lightweight language model",
     "LLM latency optimization",
     "inference architecture compression"
+  ],
+  "research_study_list": [
+    {
+      "title": "VeLoRA: Memory Efficient Training using Rank-1 Sub-Token Projections"
+    },
+    {
+      "title": "Predicting Emergent Abilities with Infinite Resolution Evaluation"
+    },
+    {
+      "title": "Stacking Your Transformers: A Closer Look at Model Growth for Efficient LLM Pre-Training"
+    },
+    {
+      "title": "CLLMs: Consistency Large Language Models"
+    },
+    {
+      "title": "MiniCache: KV Cache Compression in Depth Dimension for Large Language Models"
+    },
+    {
+      "title": "MInference 1.0: Accelerating Pre-filling for Long-Context LLMs via Dynamic Sparse Attention"
+    },
+    {
+      "title": "IceFormer: Accelerated Inference with Long-Sequence Transformers on CPUs"
+    },
+    {
+      "title": "EL-Attention: Memory Efficient Lossless Attention for Generation"
+    },
+    {
+      "title": "Response Length Perception and  Sequence Scheduling: An LLM-Empowered LLM Inference Pipeline"
+    },
+    {
+      "title": "Iron: Private Inference on Transformers"
+    },
+    {
+      "title": "LAMOL: LAnguage MOdeling for Lifelong Language Learning"
+    },
+    {
+      "title": "Any-Precision LLM: Low-Cost Deployment of Multiple, Different-Sized LLMs"
+    },
+    {
+      "title": "Any-Precision LLM: Low-Cost Deployment of Multiple, Different-Sized LLMs"
+    },
+    {
+      "title": "VeLoRA: Memory Efficient Training using Rank-1 Sub-Token Projections"
+    },
+    {
+      "title": "NTK-approximating MLP Fusion for Efficient Language Model Fine-tuning"
+    },
+    {
+      "title": "PaDeLLM-NER: Parallel Decoding in Large Language Models for Named Entity Recognition"
+    },
+    {
+      "title": "Towards Optimal Caching and Model Selection for Large Model Inference"
+    },
+    {
+      "title": "Bifurcated Attention for Single-Context Large-Batch Sampling"
+    },
+    {
+      "title": "Skeleton-of-Thought: Prompting LLMs for Efficient Parallel Generation"
+    },
+    {
+      "title": "Response Length Perception and  Sequence Scheduling: An LLM-Empowered LLM Inference Pipeline"
+    },
+    {
+      "title": "Probabilistic Connection Importance Inference and Lossless Compression of Deep Neural Networks"
+    },
+    {
+      "title": "Search for Efficient Large Language Models"
+    },
+    {
+      "title": "Serving Graph Compression for Graph Neural Networks"
+    },
+    {
+      "title": "Efficient Latency-Aware CNN Depth Compression via Two-Stage Dynamic Programming"
+    },
+    {
+      "title": "Inducing and Exploiting Activation Sparsity for Fast Inference on Deep Neural Networks"
+    }
   ]
 }
