@@ -266,7 +266,14 @@ def get_post_odd_hidden(model: PLADTransformer, x: torch.Tensor, pair_idx: int) 
     return h
 
 
-def distill_even_block(model: PLADTransformer, pair_idx: int, data_iter, steps: int = 50, lr: float = 5e-4, device: Optional[torch.device] = None):
+def distill_even_block(model: PLADTransformer,
+                       pair_idx: int,
+                       data_iter,
+                       steps: int = 50,
+                       lr: float = 5e-4,
+                       device: Optional[torch.device] = None,
+                       dataset: Optional[torch.utils.data.Dataset] = None,
+                       batch_size: Optional[int] = None):
     if device is None:
         device = device_auto()
     model.train()
@@ -281,7 +288,14 @@ def distill_even_block(model: PLADTransformer, pair_idx: int, data_iter, steps: 
     opt = torch.optim.AdamW(params, lr=lr, betas=(0.9, 0.95), weight_decay=0.01)
     moving = None
     for t in range(steps):
-        batch = next(data_iter)
+        try:
+            batch = next(data_iter)
+        except StopIteration:
+            if dataset is None or batch_size is None:
+                # If we cannot rebuild the iterator, re-raise to surface the issue
+                raise
+            data_iter = iter(torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True))
+            batch = next(data_iter)
         x = batch["input_ids"].to(device)
         with torch.no_grad():
             teacher_in = get_post_odd_hidden(model, x, pair_idx - 1) if pair_idx > 0 else (model.embed(x) + model.pos_emb[:, :x.size(1), :])
@@ -424,7 +438,8 @@ def train_plad(model: PLADTransformer,
                 activator.activate_pair(pidx, use_adapters=use_adapters)
                 print(f"  Activated even block for pair {pidx} (use_adapters={use_adapters})")
                 if do_distill and use_adapters and distill_steps_per_pair > 0:
-                    distill_even_block(model, pidx, data_iter, steps=distill_steps_per_pair, lr=5e-4, device=device)
+                    distill_even_block(model, pidx, data_iter, steps=distill_steps_per_pair, lr=5e-4, device=device,
+                                       dataset=train_loader.dataset, batch_size=train_loader.batch_size)
                     activator.merge_pair_adapters(pidx)
                     print(f"  Merged adapters for pair {pidx} after distillation")
                 activated_ptr += 1
