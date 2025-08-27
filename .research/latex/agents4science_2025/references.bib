@@ -5,3 +5,530 @@
   publisher = {GitHub},
   url       = {https://github.com/airas-org/airas}
 }
+
+% ===========================================
+% REQUIRED CITATIONS
+% These papers must be cited in the manuscript
+% ===========================================
+
+@article{andoorveedu-2022-tempo,
+ abstract = {Training deep learning models can be computationally expensive. Prior works
+have shown that increasing the batch size can potentially lead to better
+overall throughput. However, the batch size is frequently limited by the
+accelerator memory capacity due to the activations/feature maps stored for the
+training backward pass, as larger batch sizes require larger feature maps to be
+stored. Transformer-based models, which have recently seen a surge in
+popularity due to their good performance and applicability to a variety of
+tasks, have a similar problem. To remedy this issue, we propose Tempo, a new
+approach to efficiently use accelerator (e.g., GPU) memory resources for
+training Transformer-based models. Our approach provides drop-in replacements
+for the GELU, LayerNorm, and Attention layers, reducing the memory usage and
+ultimately leading to more efficient training. We implement Tempo and evaluate
+the throughput, memory usage, and accuracy/loss on the BERT Large pre-training
+task. We demonstrate that Tempo enables up to 2x higher batch sizes and 16%
+higher training throughput over the state-of-the-art baseline. We also evaluate
+Tempo on GPT2 and RoBERTa models, showing 19% and 26% speedup over the
+baseline.},
+ arxiv_url = {https://arxiv.org/pdf/2210.10246v2.pdf},
+ author = {Muralidhar Andoorveedu and Zhanda Zhu and Bojian Zheng and Gennady Pekhimenko},
+ github_url = {https://github.com/UofT-EcoSystem/Tempo},
+ title = {Tempo: Accelerating Transformer-Based Model Training through Memory Footprint Reduction},
+ year = {2022}
+}
+
+@article{author-year-breaking,
+ title = {Breaking Physical and Linguistic Borders: Multilingual Federated Prompt Tuning for Low-Resource Languages}
+}
+
+@article{author-year-efficient,
+ title = {Efficient Training of Language Models using Few-Shot Learning}
+}
+
+@article{etxaniz-2024-bertaqa,
+ abstract = {Large Language Models (LLMs) exhibit extensive knowledge about the world, but
+most evaluations have been limited to global or anglocentric subjects. This
+raises the question of how well these models perform on topics relevant to
+other cultures, whose presence on the web is not that prominent. To address
+this gap, we introduce BertaQA, a multiple-choice trivia dataset that is
+parallel in English and Basque. The dataset consists of a local subset with
+questions pertinent to the Basque culture, and a global subset with questions
+of broader interest. We find that state-of-the-art LLMs struggle with local
+cultural knowledge, even as they excel on global topics. However, we show that
+continued pre-training in Basque significantly improves the models' performance
+on Basque culture, even when queried in English. To our knowledge, this is the
+first solid evidence of knowledge transfer from a low-resource to a
+high-resource language. Our analysis sheds light on the complex interplay
+between language and knowledge, and reveals that some prior findings do not
+fully hold when reassessed on local topics. Our dataset and evaluation code are
+available under open licenses at https://github.com/juletx/BertaQA.},
+ arxiv_url = {https://arxiv.org/pdf/2406.07302v2.pdf},
+ author = {Julen Etxaniz and Gorka Azkune and Aitor Soroa and Oier Lopez de Lacalle and Mikel Artetxe},
+ github_url = {https://github.com/juletx/BertaQA},
+ title = {BertaQA: How Much Do Language Models Know About Local Culture?},
+ year = {2024}
+}
+
+@article{geiping-2022-cramming,
+ abstract = {Recent trends in language modeling have focused on increasing performance
+through scaling, and have resulted in an environment where training language
+models is out of reach for most researchers and practitioners. While most in
+the community are asking how to push the limits of extreme computation, we ask
+the opposite question: How far can we get with a single GPU in just one day?
+  We investigate the downstream performance achievable with a transformer-based
+language model trained completely from scratch with masked language modeling
+for a single day on a single consumer GPU. Aside from re-analyzing nearly all
+components of the pretraining pipeline for this scenario and providing a
+modified pipeline with performance close to BERT, we investigate why scaling
+down is hard, and which modifications actually improve performance in this
+scenario. We provide evidence that even in this constrained setting,
+performance closely follows scaling laws observed in large-compute settings.
+Through the lens of scaling laws, we categorize a range of recent improvements
+to training and architecture and discuss their merit and practical
+applicability (or lack thereof) for the limited compute setting.},
+ arxiv_url = {https://arxiv.org/pdf/2212.14034v1.pdf},
+ author = {Jonas Geiping and Tom Goldstein},
+ title = {Cramming: Training a Language Model on a single GPU in one day.},
+ year = {2022}
+}
+
+@article{jia-2024-toward,
+ abstract = {Recent years have witnessed a clear trend towards language models with an
+ever-increasing number of parameters, as well as the growing training overhead
+and memory usage. Distributed training, particularly through Sharded Data
+Parallelism (ShardedDP) which partitions optimizer states among workers, has
+emerged as a crucial technique to mitigate training time and memory usage. Yet,
+a major challenge in the scalability of ShardedDP is the intensive
+communication of weights and gradients. While compression techniques can
+alleviate this issue, they often result in worse accuracy. Driven by this
+limitation, we propose SDP4Bit (Toward 4Bit Communication Quantization in
+Sharded Data Parallelism for LLM Training), which effectively reduces the
+communication of weights and gradients to nearly 4 bits via two novel
+techniques: quantization on weight differences, and two-level gradient smooth
+quantization. Furthermore, SDP4Bit presents an algorithm-system co-design with
+runtime optimization to minimize the computation overhead of compression. In
+addition to the theoretical guarantees of convergence, we empirically evaluate
+the accuracy of SDP4Bit on the pre-training of GPT models with up to 6.7
+billion parameters, and the results demonstrate a negligible impact on training
+loss. Furthermore, speed experiments show that SDP4Bit achieves up to
+4.08$\times$ speedup in end-to-end throughput on a scale of 128 GPUs.},
+ arxiv_url = {https://arxiv.org/pdf/2410.15526v2.pdf},
+ author = {Jinda Jia and Cong Xie and Hanlin Lu and Daoce Wang and Hao Feng and Chengming Zhang and Baixi Sun and Haibin Lin and Zhi Zhang and Xin Liu and Dingwen Tao},
+ title = {SDP4Bit: Toward 4-bit Communication Quantization in Sharded Data Parallelism for LLM Training},
+ year = {2024}
+}
+
+@article{kitaev-2020-reformer,
+ abstract = {Large Transformer models routinely achieve state-of-the-art results on a
+number of tasks but training these models can be prohibitively costly,
+especially on long sequences. We introduce two techniques to improve the
+efficiency of Transformers. For one, we replace dot-product attention by one
+that uses locality-sensitive hashing, changing its complexity from O($L^2$) to
+O($L\log L$), where $L$ is the length of the sequence. Furthermore, we use
+reversible residual layers instead of the standard residuals, which allows
+storing activations only once in the training process instead of $N$ times,
+where $N$ is the number of layers. The resulting model, the Reformer, performs
+on par with Transformer models while being much more memory-efficient and much
+faster on long sequences.},
+ arxiv_url = {https://arxiv.org/pdf/2001.04451v2.pdf},
+ author = {Nikita Kitaev and Łukasz Kaiser and Anselm Levskaya},
+ github_url = {https://github.com/google/trax},
+ title = {Reformer: The Efficient Transformer},
+ year = {2020}
+}
+
+@article{liu-2024-mobilellm,
+ abstract = {This paper addresses the growing need for efficient large language models
+(LLMs) on mobile devices, driven by increasing cloud costs and latency
+concerns. We focus on designing top-quality LLMs with fewer than a billion
+parameters, a practical choice for mobile deployment. Contrary to prevailing
+belief emphasizing the pivotal role of data and parameter quantity in
+determining model quality, our investigation underscores the significance of
+model architecture for sub-billion scale LLMs. Leveraging deep and thin
+architectures, coupled with embedding sharing and grouped-query attention
+mechanisms, we establish a strong baseline network denoted as MobileLLM, which
+attains a remarkable 2.7%/4.3% accuracy boost over preceding 125M/350M
+state-of-the-art models. Additionally, we propose an immediate block-wise
+weight-sharing approach with no increase in model size and only marginal
+latency overhead. The resultant models, denoted as MobileLLM-LS, demonstrate a
+further accuracy enhancement of 0.7%/0.8% than MobileLLM 125M/350M. Moreover,
+MobileLLM model family shows significant improvements compared to previous
+sub-billion models on chat benchmarks, and demonstrates close correctness to
+LLaMA-v2 7B in API calling tasks, highlighting the capability of small models
+for common on-device use cases.},
+ arxiv_url = {https://arxiv.org/pdf/2402.14905v2.pdf},
+ author = {Zechun Liu and Changsheng Zhao and Forrest Iandola and Chen Lai and Yuandong Tian and Igor Fedorov and Yunyang Xiong and Ernie Chang and Yangyang Shi and Raghuraman Krishnamoorthi and Liangzhen Lai and Vikas Chandra},
+ title = {MobileLLM: Optimizing Sub-billion Parameter Language Models for On-Device Use Cases},
+ year = {2024}
+}
+
+@article{miles-2024-velora,
+ abstract = {Large language models (LLMs) have recently emerged as powerful tools for
+tackling many language-processing tasks. Despite their success, training and
+fine-tuning these models is still far too computationally and memory intensive.
+In this paper, we identify and characterise the important components needed for
+effective model convergence using gradient descent. In doing so we find that
+the intermediate activations used to implement backpropagation can be
+excessively compressed without incurring any degradation in performance. This
+result leads us to a cheap and memory-efficient algorithm for both fine-tuning
+and pre-training LLMs. The proposed algorithm simply divides the tokens up into
+smaller sub-tokens before projecting them onto a fixed 1-dimensional subspace
+during the forward pass. These features are then coarsely reconstructed during
+the backward pass to implement the update rules. We confirm the effectiveness
+of our algorithm as being complimentary to many state-of-the-art PEFT methods
+on the VTAB-1k fine-tuning benchmark. Furthermore, we outperform QLoRA for
+fine-tuning LLaMA and show competitive performance against other
+memory-efficient pre-training methods on the large-scale C4 dataset.},
+ arxiv_url = {https://arxiv.org/pdf/2405.17991v2.pdf},
+ author = {Roy Miles and Pradyumna Reddy and Ismail Elezi and Jiankang Deng},
+ github_url = {https://github.com/roymiles/VeLoRA},
+ title = {VeLoRA: Memory Efficient Training using Rank-1 Sub-Token Projections},
+ year = {2024}
+}
+
+@article{min-2023-silo,
+ abstract = {The legality of training language models (LMs) on copyrighted or otherwise
+restricted data is under intense debate. However, as we show, model performance
+significantly degrades if trained only on low-risk text (e.g., out-of-copyright
+books or government documents), due to its limited size and domain coverage. We
+present SILO, a new language model that manages this risk-performance tradeoff
+during inference. SILO is built by (1) training a parametric LM on Open License
+Corpus (OLC), a new corpus we curate with 228B tokens of public domain and
+permissively licensed text and (2) augmenting it with a more general and easily
+modifiable nonparametric datastore (e.g., containing copyrighted books or news)
+that is only queried during inference. The datastore allows use of high-risk
+data without training on it, supports sentence-level data attribution, and
+enables data producers to opt out from the model by removing content from the
+store. These capabilities can foster compliance with data-use regulations such
+as the fair use doctrine in the United States and the GDPR in the European
+Union. Our experiments show that the parametric LM struggles on domains not
+covered by OLC. However, access to the datastore greatly improves out of domain
+performance, closing 90% of the performance gap with an LM trained on the Pile,
+a more diverse corpus with mostly high-risk text. We also analyze which
+nonparametric approach works best, where the remaining errors lie, and how
+performance scales with datastore size. Our results suggest that it is possible
+to build high quality language models while mitigating their legal risk.},
+ arxiv_url = {https://arxiv.org/pdf/2308.04430v2.pdf},
+ author = {Sewon Min and Suchin Gururangan and Eric Wallace and Weijia Shi and Hannaneh Hajishirzi and Noah A. Smith and Luke Zettlemoyer},
+ github_url = {https://github.com/kernelmachine/silo-lm},
+ title = {SILO Language Models: Isolating Legal Risk In a Nonparametric Datastore},
+ year = {2023}
+}
+
+@article{narayanan-2020-memory,
+ abstract = {Many state-of-the-art ML results have been obtained by scaling up the number
+of parameters in existing models. However, parameters and activations for such
+large models often do not fit in the memory of a single accelerator device;
+this means that it is necessary to distribute training of large models over
+multiple accelerators. In this work, we propose PipeDream-2BW, a system that
+supports memory-efficient pipeline parallelism. PipeDream-2BW uses a novel
+pipelining and weight gradient coalescing strategy, combined with the double
+buffering of weights, to ensure high throughput, low memory footprint, and
+weight update semantics similar to data parallelism. In addition, PipeDream-2BW
+automatically partitions the model over the available hardware resources, while
+respecting hardware constraints such as memory capacities of accelerators and
+interconnect topologies. PipeDream-2BW can accelerate the training of large GPT
+and BERT language models by up to 20$\times$ with similar final model accuracy.},
+ arxiv_url = {https://arxiv.org/pdf/2006.09503v3.pdf},
+ author = {Deepak Narayanan and Amar Phanishayee and Kaiyu Shi and Xie Chen and Matei Zaharia},
+ title = {Memory-Efficient Pipeline-Parallel DNN Training},
+ year = {2020}
+}
+
+@article{park-2024-any,
+ abstract = {Recently, considerable efforts have been directed towards compressing Large
+Language Models (LLMs), which showcase groundbreaking capabilities across
+diverse applications but entail significant deployment costs due to their large
+sizes. Meanwhile, much less attention has been given to mitigating the costs
+associated with deploying multiple LLMs of varying sizes despite its practical
+significance. Thus, this paper introduces \emph{any-precision LLM}, extending
+the concept of any-precision DNN to LLMs. Addressing challenges in
+any-precision LLM, we propose a lightweight method for any-precision
+quantization of LLMs, leveraging a post-training quantization framework, and
+develop a specialized software engine for its efficient serving. As a result,
+our solution significantly reduces the high costs of deploying multiple,
+different-sized LLMs by overlaying LLMs quantized to varying bit-widths, such
+as 3, 4, ..., $n$ bits, into a memory footprint comparable to a single $n$-bit
+LLM. All the supported LLMs with varying bit-widths demonstrate
+state-of-the-art model quality and inference throughput, proving itself to be a
+compelling option for deployment of multiple, different-sized LLMs. Our code is
+open-sourced and available online.},
+ arxiv_url = {https://arxiv.org/pdf/2402.10517v4.pdf},
+ author = {Yeonhong Park and Jake Hyun and SangLyul Cho and Bonggeun Sim and Jae W. Lee},
+ title = {Any-Precision LLM: Low-Cost Deployment of Multiple, Different-Sized LLMs},
+ year = {2024}
+}
+
+@article{seedat-2023-curated,
+ abstract = {Machine Learning (ML) in low-data settings remains an underappreciated yet
+crucial problem. Hence, data augmentation methods to increase the sample size
+of datasets needed for ML are key to unlocking the transformative potential of
+ML in data-deprived regions and domains. Unfortunately, the limited training
+set constrains traditional tabular synthetic data generators in their ability
+to generate a large and diverse augmented dataset needed for ML tasks. To
+address this challenge, we introduce CLLM, which leverages the prior knowledge
+of Large Language Models (LLMs) for data augmentation in the low-data regime.
+However, not all the data generated by LLMs will improve downstream utility, as
+for any generative model. Consequently, we introduce a principled curation
+mechanism, leveraging learning dynamics, coupled with confidence and
+uncertainty metrics, to obtain a high-quality dataset. Empirically, on multiple
+real-world datasets, we demonstrate the superior performance of CLLM in the
+low-data regime compared to conventional generators. Additionally, we provide
+insights into the LLM generation and curation mechanism, shedding light on the
+features that enable them to output high-quality augmented datasets.},
+ arxiv_url = {https://arxiv.org/pdf/2312.12112v3.pdf},
+ author = {Nabeel Seedat and Nicolas Huynh and Boris van Breugel and Mihaela van der Schaar},
+ github_url = {https://github.com/seedatnabeel/CLLM},
+ title = {Curated LLM: Synergy of LLMs and Data Curation for tabular augmentation in low-data regimes},
+ year = {2023}
+}
+
+@article{shen-2022-staged,
+ abstract = {The current standard approach to scaling transformer language models trains
+each model size from a different random initialization. As an alternative, we
+consider a staged training setup that begins with a small model and
+incrementally increases the amount of compute used for training by applying a
+"growth operator" to increase the model depth and width. By initializing each
+stage with the output of the previous one, the training process effectively
+re-uses the compute from prior stages and becomes more efficient. Our growth
+operators each take as input the entire training state (including model
+parameters, optimizer state, learning rate schedule, etc.) and output a new
+training state from which training continues. We identify two important
+properties of these growth operators, namely that they preserve both the loss
+and the "training dynamics" after applying the operator. While the
+loss-preserving property has been discussed previously, to the best of our
+knowledge this work is the first to identify the importance of preserving the
+training dynamics (the rate of decrease of the loss during training). To find
+the optimal schedule for stages, we use the scaling laws from (Kaplan et al.,
+2020) to find a precise schedule that gives the most compute saving by starting
+a new stage when training efficiency starts decreasing. We empirically validate
+our growth operators and staged training for autoregressive language models,
+showing up to 22% compute savings compared to a strong baseline trained from
+scratch. Our code is available at https://github.com/allenai/staged-training.},
+ arxiv_url = {https://arxiv.org/pdf/2203.06211v1.pdf},
+ author = {Sheng Shen and Pete Walsh and Kurt Keutzer and Jesse Dodge and Matthew Peters and Iz Beltagy},
+ title = {Staged Training for Transformer Language Models},
+ year = {2022}
+}
+
+@article{so-2021-searching,
+ abstract = {Large Transformer models have been central to recent advances in natural
+language processing. The training and inference costs of these models, however,
+have grown rapidly and become prohibitively expensive. Here we aim to reduce
+the costs of Transformers by searching for a more efficient variant. Compared
+to previous approaches, our search is performed at a lower level, over the
+primitives that define a Transformer TensorFlow program. We identify an
+architecture, named Primer, that has a smaller training cost than the original
+Transformer and other variants for auto-regressive language modeling. Primer's
+improvements can be mostly attributed to two simple modifications: squaring
+ReLU activations and adding a depthwise convolution layer after each Q, K, and
+V projection in self-attention.
+  Experiments show Primer's gains over Transformer increase as compute scale
+grows and follow a power law with respect to quality at optimal model sizes. We
+also verify empirically that Primer can be dropped into different codebases to
+significantly speed up training without additional tuning. For example, at a
+500M parameter size, Primer improves the original T5 architecture on C4
+auto-regressive language modeling, reducing the training cost by 4X.
+Furthermore, the reduced training cost means Primer needs much less compute to
+reach a target one-shot performance. For instance, in a 1.9B parameter
+configuration similar to GPT-3 XL, Primer uses 1/3 of the training compute to
+achieve the same one-shot performance as Transformer. We open source our models
+and several comparisons in T5 to help with reproducibility.},
+ arxiv_url = {https://arxiv.org/pdf/2109.08668v2.pdf},
+ author = {David R. So and Wojciech Mańke and Hanxiao Liu and Zihang Dai and Noam Shazeer and Quoc V. Le},
+ github_url = {https://github.com/google-research/google-research},
+ title = {Searching for Efficient Transformers for Language Modeling},
+ year = {2021}
+}
+
+@article{tang-2024-rethinking,
+ abstract = {The power of large language models (LLMs) has been demonstrated through
+numerous data and computing resources. However, the application of language
+models on mobile devices is facing huge challenge on the computation and memory
+costs, that is, tiny language models with high performance are urgently
+required. Limited by the highly complex training process, there are many
+details for optimizing language models that are seldom studied carefully. In
+this study, based on a tiny language model with 1B parameters, we carefully
+design a series of empirical study to analyze the effect of each component.
+Three perspectives are mainly discussed, \ie, neural architecture, parameter
+initialization, and optimization strategy. Several design formulas are
+empirically proved especially effective for tiny language models, including
+tokenizer compression, architecture tweaking, parameter inheritance and
+multiple-round training. Then we train PanGu-$\pi$-1B Pro and PanGu-$\pi$-1.5B
+Pro on 1.6T multilingual corpora, following the established formulas.
+Experimental results demonstrate the improved optimization and architecture
+yield a notable average improvement of 8.87 on benchmark evaluation sets for
+PanGu-$\pi$-1B Pro. Besides, PanGu-$\pi$-1.5B Pro surpasses a range of SOTA
+models with larger model sizes, validating its superior performance. The code
+is available at https://github.com/YuchuanTian/RethinkTinyLM.},
+ arxiv_url = {https://arxiv.org/pdf/2402.02791v4.pdf},
+ author = {Yehui Tang and Kai Han and Fangcheng Liu and Yunsheng Ni and Yuchuan Tian and Zheyuan Bai and Yi-Qi Hu and Sichao Liu and Shangling Jui and Yunhe Wang},
+ title = {Rethinking Optimization and Architecture for Tiny Language Models},
+ year = {2024}
+}
+
+@article{zhang-2020-accelerating,
+ abstract = {Recently, Transformer-based language models have demonstrated remarkable
+performance across many NLP domains. However, the unsupervised pre-training
+step of these models suffers from unbearable overall computational expenses.
+Current methods for accelerating the pre-training either rely on massive
+parallelism with advanced hardware or are not applicable to language modeling.
+In this work, we propose a method based on progressive layer dropping that
+speeds the training of Transformer-based language models, not at the cost of
+excessive hardware resources but from model architecture change and training
+technique boosted efficiency. Extensive experiments on BERT show that the
+proposed method achieves a 24% time reduction on average per sample and allows
+the pre-training to be 2.5 times faster than the baseline to get a similar
+accuracy on downstream tasks. While being faster, our pre-trained models are
+equipped with strong knowledge transferability, achieving comparable and
+sometimes higher GLUE score than the baseline when pre-trained with the same
+number of samples.},
+ arxiv_url = {https://arxiv.org/pdf/2010.13369v1.pdf},
+ author = {Minjia Zhang and Yuxiong He},
+ title = {Accelerating Training of Transformer-Based Language Models with Progressive Layer Dropping},
+ year = {2020}
+}
+
+@article{zhang-2022-examining,
+ abstract = {Natural language understanding and generation models follow one of the two
+dominant architectural paradigms: language models (LMs) that process
+concatenated sequences in a single stack of layers, and encoder-decoder models
+(EncDec) that utilize separate layer stacks for input and output processing. In
+machine translation, EncDec has long been the favoured approach, but with few
+studies investigating the performance of LMs. In this work, we thoroughly
+examine the role of several architectural design choices on the performance of
+LMs on bilingual, (massively) multilingual and zero-shot translation tasks,
+under systematic variations of data conditions and model sizes. Our results
+show that: (i) Different LMs have different scaling properties, where
+architectural differences often have a significant impact on model performance
+at small scales, but the performance gap narrows as the number of parameters
+increases, (ii) Several design choices, including causal masking and
+language-modeling objectives for the source sequence, have detrimental effects
+on translation quality, and (iii) When paired with full-visible masking for
+source sequences, LMs could perform on par with EncDec on supervised bilingual
+and multilingual translation tasks, and improve greatly on zero-shot directions
+by facilitating the reduction of off-target translations.},
+ arxiv_url = {https://arxiv.org/pdf/2202.00528v3.pdf},
+ author = {Biao Zhang and Behrooz Ghorbani and Ankur Bapna and Yong Cheng and Xavier Garcia and Jonathan Shen and Orhan Firat},
+ title = {Examining Scaling and Transfer of Language Model Architectures for Machine Translation},
+ year = {2022}
+}
+
+@article{zou-2024-multi,
+ abstract = {The fast growing capabilities of large-scale deep learning models, such as
+Bert, GPT and ViT, are revolutionizing the landscape of NLP, CV and many other
+domains. Training such models, however, poses an unprecedented demand for
+computing power, which incurs exponentially increasing energy cost and carbon
+dioxide emissions. It is thus critical to develop efficient training solutions
+to reduce the training costs. Motivated by a set of key observations of inter-
+and intra-layer similarities among feature maps and attentions that can be
+identified from typical training processes, we propose a multi-level framework
+for training acceleration. Specifically, the framework is based on three basic
+operators, Coalescing, De-coalescing and Interpolation, which can be
+orchestrated to build a multi-level training framework. The framework consists
+of a V-cycle training process, which progressively down- and up-scales the
+model size and projects the parameters between adjacent levels of models via
+coalescing and de-coalescing. The key idea is that a smaller model that can be
+trained for fast convergence and the trained parameters provides high-qualities
+intermediate solutions for the next level larger network. The interpolation
+operator is designed to break the symmetry of neurons incurred by de-coalescing
+for better convergence performance. Our experiments on transformer-based
+language models (e.g. Bert, GPT) as well as a vision model (e.g. DeiT) prove
+that the proposed framework reduces the computational cost by about 20% on
+training BERT/GPT-Base models and up to 51.6% on training the BERT-Large model
+while preserving the performance.},
+ arxiv_url = {https://arxiv.org/pdf/2404.07999v1.pdf},
+ author = {Longwei Zou and Han Zhang and Yangdong Deng},
+ github_url = {https://github.com/Photooon/Multi-Level-Training-Framework},
+ title = {A Multi-Level Framework for Accelerating Training Transformer Models},
+ year = {2024}
+}
+
+% ===========================================
+% REFERENCE CANDIDATES
+% Additional reference papers for context
+% ===========================================
+
+@article{brown-2020-language,
+ abstract = {Recent work has demonstrated substantial gains on many NLP tasks and
+benchmarks by pre-training on a large corpus of text followed by fine-tuning on
+a specific task. While typically task-agnostic in architecture, this method
+still requires task-specific fine-tuning datasets of thousands or tens of
+thousands of examples. By contrast, humans can generally perform a new language
+task from only a few examples or from simple instructions - something which
+current NLP systems still largely struggle to do. Here we show that scaling up
+language models greatly improves task-agnostic, few-shot performance, sometimes
+even reaching competitiveness with prior state-of-the-art fine-tuning
+approaches. Specifically, we train GPT-3, an autoregressive language model with
+175 billion parameters, 10x more than any previous non-sparse language model,
+and test its performance in the few-shot setting. For all tasks, GPT-3 is
+applied without any gradient updates or fine-tuning, with tasks and few-shot
+demonstrations specified purely via text interaction with the model. GPT-3
+achieves strong performance on many NLP datasets, including translation,
+question-answering, and cloze tasks, as well as several tasks that require
+on-the-fly reasoning or domain adaptation, such as unscrambling words, using a
+novel word in a sentence, or performing 3-digit arithmetic. At the same time,
+we also identify some datasets where GPT-3's few-shot learning still struggles,
+as well as some datasets where GPT-3 faces methodological issues related to
+training on large web corpora. Finally, we find that GPT-3 can generate samples
+of news articles which human evaluators have difficulty distinguishing from
+articles written by humans. We discuss broader societal impacts of this finding
+and of GPT-3 in general.},
+ arxiv_url = {https://arxiv.org/pdf/2005.14165v4.pdf},
+ author = {Tom B. Brown and Benjamin Mann and Nick Ryder and Melanie Subbiah and Jared Kaplan and Prafulla Dhariwal and Arvind Neelakantan and Pranav Shyam and Girish Sastry and Amanda Askell and Sandhini Agarwal and Ariel Herbert-Voss and Gretchen Krueger and Tom Henighan and Rewon Child and Aditya Ramesh and Daniel M. Ziegler and Jeffrey Wu and Clemens Winter and Christopher Hesse and Mark Chen and Eric Sigler and Mateusz Litwin and Scott Gray and Benjamin Chess and Jack Clark and Christopher Berner and Sam McCandlish and Alec Radford and Ilya Sutskever and Dario Amodei},
+ title = {Language models are few-shot learners.},
+ year = {2020}
+}
+
+@article{devlin-2018-bert,
+ abstract = {We introduce a new language representation model called BERT, which stands
+for Bidirectional Encoder Representations from Transformers. Unlike recent
+language representation models, BERT is designed to pre-train deep
+bidirectional representations from unlabeled text by jointly conditioning on
+both left and right context in all layers. As a result, the pre-trained BERT
+model can be fine-tuned with just one additional output layer to create
+state-of-the-art models for a wide range of tasks, such as question answering
+and language inference, without substantial task-specific architecture
+modifications.
+  BERT is conceptually simple and empirically powerful. It obtains new
+state-of-the-art results on eleven natural language processing tasks, including
+pushing the GLUE score to 80.5% (7.7% point absolute improvement), MultiNLI
+accuracy to 86.7% (4.6% absolute improvement), SQuAD v1.1 question answering
+Test F1 to 93.2 (1.5 point absolute improvement) and SQuAD v2.0 Test F1 to 83.1
+(5.1 point absolute improvement).},
+ arxiv_url = {https://arxiv.org/pdf/1810.04805v2.pdf},
+ author = {Jacob Devlin and Ming-Wei Chang and Kenton Lee and Kristina Toutanova},
+ title = {BERT: Pre-training of deep bidirectional transformers for language understanding.},
+ year = {2018}
+}
+
+@article{henighan-2020-scaling,
+ abstract = {We identify empirical scaling laws for the cross-entropy loss in four
+domains: generative image modeling, video modeling, multimodal
+image$\leftrightarrow$text models, and mathematical problem solving. In all
+cases autoregressive Transformers smoothly improve in performance as model size
+and compute budgets increase, following a power-law plus constant scaling law.
+The optimal model size also depends on the compute budget through a power-law,
+with exponents that are nearly universal across all data domains.
+  The cross-entropy loss has an information theoretic interpretation as
+$S($True$) + D_{\mathrm{KL}}($True$||$Model$)$, and the empirical scaling laws
+suggest a prediction for both the true data distribution's entropy and the KL
+divergence between the true and model distributions. With this interpretation,
+billion-parameter Transformers are nearly perfect models of the YFCC100M image
+distribution downsampled to an $8\times 8$ resolution, and we can forecast the
+model size needed to achieve any given reducible loss (ie $D_{\mathrm{KL}}$) in
+nats/image for other resolutions.
+  We find a number of additional scaling laws in specific domains: (a) we
+identify a scaling relation for the mutual information between captions and
+images in multimodal models, and show how to answer the question "Is a picture
+worth a thousand words?"; (b) in the case of mathematical problem solving, we
+identify scaling laws for model performance when extrapolating beyond the
+training distribution; (c) we finetune generative image models for ImageNet
+classification and find smooth scaling of the classification loss and error
+rate, even as the generative loss levels off. Taken together, these results
+strengthen the case that scaling laws have important implications for neural
+network performance, including on downstream tasks.},
+ arxiv_url = {https://arxiv.org/pdf/2010.14701v2.pdf},
+ author = {Tom Henighan and Jared Kaplan and Mor Katz and Mark Chen and Christopher Hesse and Jacob Jackson and Heewoo Jun and Tom B. Brown and Prafulla Dhariwal and Scott Gray and Chris Hallacy and Benjamin Mann and Alec Radford and Aditya Ramesh and Nick Ryder and Daniel M. Ziegler and John Schulman and Dario Amodei and Sam McCandlish},
+ title = {Scaling laws for autoregressive generative modeling.},
+ year = {2020}
+}
