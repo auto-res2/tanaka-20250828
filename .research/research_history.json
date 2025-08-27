@@ -6,5 +6,82 @@
     "lightweight LLM design",
     "accelerated language model training",
     "low resource LLM"
+  ],
+  "research_study_list": [
+    {
+      "title": "Rethinking Optimization and Architecture for Tiny Language Models"
+    },
+    {
+      "title": "MobileLLM: Optimizing Sub-billion Parameter Language Models for On-Device Use Cases"
+    },
+    {
+      "title": "Examining Scaling and Transfer of Language Model Architectures for Machine Translation"
+    },
+    {
+      "title": "Examining Scaling and Transfer of Language Model Architectures for Machine Translation"
+    },
+    {
+      "title": "Cramming: Training a Language Model on a single GPU in one day."
+    },
+    {
+      "title": "Reformer: The Efficient Transformer"
+    },
+    {
+      "title": "Searching for Efficient Transformers for Language Modeling"
+    },
+    {
+      "title": "Staged Training for Transformer Language Models"
+    },
+    {
+      "title": "Staged Training for Transformer Language Models"
+    },
+    {
+      "title": "Tempo: Accelerating Transformer-Based Model Training through Memory Footprint Reduction"
+    },
+    {
+      "title": "MobileLLM: Optimizing Sub-billion Parameter Language Models for On-Device Use Cases"
+    },
+    {
+      "title": "Any-Precision LLM: Low-Cost Deployment of Multiple, Different-Sized LLMs"
+    },
+    {
+      "title": "Any-Precision LLM: Low-Cost Deployment of Multiple, Different-Sized LLMs"
+    },
+    {
+      "title": "VeLoRA: Memory Efficient Training using Rank-1 Sub-Token Projections"
+    },
+    {
+      "title": "Rethinking Optimization and Architecture for Tiny Language Models"
+    },
+    {
+      "title": "Accelerating Training of Transformer-Based Language Models with Progressive Layer Dropping"
+    },
+    {
+      "title": "Efficient Training of Language Models using Few-Shot Learning"
+    },
+    {
+      "title": "A Multi-Level Framework for Accelerating Training Transformer Models"
+    },
+    {
+      "title": "SDP4Bit: Toward 4-bit Communication Quantization in Sharded Data Parallelism for LLM Training"
+    },
+    {
+      "title": "Memory-Efficient Pipeline-Parallel DNN Training"
+    },
+    {
+      "title": "BertaQA: How Much Do Language Models Know About Local Culture?"
+    },
+    {
+      "title": "Breaking Physical and Linguistic Borders: Multilingual Federated Prompt Tuning for Low-Resource Languages"
+    },
+    {
+      "title": "Curated LLM: Synergy of LLMs and Data Curation for tabular augmentation in low-data regimes"
+    },
+    {
+      "title": "MobileLLM: Optimizing Sub-billion Parameter Language Models for On-Device Use Cases"
+    },
+    {
+      "title": "SILO Language Models: Isolating Legal Risk In a Nonparametric Datastore"
+    }
   ]
 }
