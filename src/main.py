@@ -13,7 +13,7 @@ def load_config(path: str):
         # Default inline config
         return {
             "run_mode": "quick_test",
-            "images_dir": ".research/iteration1/images",
+            "images_dir": ".research/iteration2/images",
             "quick_test": {
                 "enabled": True
             }
@@ -29,7 +29,7 @@ def main():
 
     cfg = load_config(args.config)
 
-    images_dir = cfg.get("images_dir", ".research/iteration1/images")
+    images_dir = cfg.get("images_dir", ".research/iteration2/images")
     os.makedirs(images_dir, exist_ok=True)
 
     mode = cfg.get("run_mode", "quick_test")

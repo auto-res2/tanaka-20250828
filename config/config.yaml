@@ -1,6 +1,6 @@
 # PLAD-T default configuration
 run_mode: quick_test  # options: quick_test, suite
-images_dir: .research/iteration1/images
+images_dir: .research/iteration2/images
 
 quick_test:
   total_steps: 40

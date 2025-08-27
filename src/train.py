@@ -59,8 +59,12 @@ class LoRAAdapter(nn.Module):
         self.alpha = alpha
         self.merged = False
         if rank > 0:
-            self.A = nn.Parameter(torch.zeros(linear.out_features, rank))
-            self.B = nn.Parameter(torch.zeros(rank, linear.in_features))
+            # ensure adapter params are on same device/dtype as the wrapped linear
+            w = self.linear.weight
+            dev = w.device
+            dtype = w.dtype
+            self.A = nn.Parameter(torch.zeros(linear.out_features, rank, device=dev, dtype=dtype))
+            self.B = nn.Parameter(torch.zeros(rank, linear.in_features, device=dev, dtype=dtype))
             nn.init.kaiming_uniform_(self.A, a=math.sqrt(5))
             nn.init.kaiming_uniform_(self.B, a=math.sqrt(5))
             self.scaling = alpha / rank
