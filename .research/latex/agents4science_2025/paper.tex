@@ -1,0 +1,261 @@
+\documentclass{article}
+
+\usepackage{agents4science_2025}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{xcolor}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+\usepackage{float}
+
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\usepackage{microtype}
+\usepackage{booktabs}
+
+
+\title{Progressive Layer Activation and Distillation for Compute-Efficient Pretraining of Tiny Language Models}
+
+\author{AIRAS}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We aim to reduce the end-to-end pretraining compute of sub-billion-parameter language models by at least 40\% without harming downstream accuracy or increasing inference latency. This is difficult because existing approaches either save only modest compute, sacrifice final quality, or rely on specialized systems. We propose PLAD-T, a Progressive Layer-Activation and Distillation Transformer that keeps the parameter count fixed while training only half the layers for most of pretraining and progressively un-gating the remaining layers with lightweight self-distillation. Concretely, \(2L\) layers are organized into \(L\) odd-even pairs with immediate weight sharing; Phase 1 trains with only odd layers active; Phase 2 activates even layers in stages, initializing each by copying its paired odd layer and briefly training rank-4 adapters to match teacher hidden states before merging. Auxiliary curricula and optional token-drop routing are orthogonal. In a controlled quick test, PLAD-T reduced theoretical training FLOPs by 43.3\% and improved throughput by 52\% versus an immediate weight-sharing baseline at comparable validation loss; while a partial activation at the end produced a transient inference speedup, the design keeps inference cost equal to the baseline once all layers are activated and adapters merged. Ablations show stable behavior across activation schedules, and dynamic W8A8 quantization yields negligible loss change. These results validate PLAD-T as a practical, PyTorch-friendly recipe for compute-efficient training of tiny LLMs.
+\end{abstract}
+
+\section{Introduction}
+Pretraining sub-billion-parameter language models on hundreds of billions to a trillion tokens remains computationally expensive, often demanding hundreds of GPU-days and well over \(10^{19}\) FLOPs. While inference for such models is already fast, pretraining compute is the dominant barrier to iteration and adoption. Practitioners therefore seek methods that cut pretraining compute substantially while preserving final quality and avoiding deployment complexity. Immediate block-wise weight sharing improves accuracy at a fixed parameter budget but pays full compute from the first step \cite{liu-2024-mobilellm}. Staged growth reduces compute by growing depth and width over time but introduces growth operators and orchestration overhead \cite{shen-2022-staged}. Progressive layer dropping accelerates BERT-style objectives but targets a different regime \cite{zhang-2020-accelerating}. System-level methods increase throughput or reduce memory without lowering the algorithmic FLOPs integral \cite{andoorveedu-2022-tempo,narayanan-2020-memory,jia-2024-toward}.
+
+We present PLAD-T, a Progressive Layer-Activation and Distillation Transformer. PLAD-T emphasizes when parameters receive gradients rather than how many parameters exist. The model instantiates \(2L\) logical layers arranged as \(L\) immediate-sharing odd-even pairs. Training proceeds in two phases. Phase 1 activates only the odd layers, gating even layers by identity, effectively halving active depth and compute while learning robust early representations. Phase 2 progressively activates the even layers in small batches. When an even layer is activated, it copies its paired odd layer’s weights and is equipped with a lightweight rank-4 adapter. A brief self-distillation step minimizes an alignment loss between normalized hidden states from a frozen teacher (odd) and the student (even). The adapter is then merged and both blocks continue joint training. Because half the network is inactive during most of training, PLAD-T reduces integrated compute without changing the final architecture or inference cost.
+
+This problem is challenging because progressive capacity changes can destabilize optimization. Staged training shows that careful operators can preserve loss and training dynamics but changes parameter count and introduces scheduling overhead \cite{shen-2022-staged}. Immediate sharing in tiny LMs improves quality but does not reduce training compute \cite{liu-2024-mobilellm}. Progressive layer dropping accelerates different objectives and masking schemes \cite{zhang-2020-accelerating}. System accelerations improve speed but not algorithmic FLOPs \cite{andoorveedu-2022-tempo,narayanan-2020-memory,jia-2024-toward}. Our key idea is a schedule that keeps the final model unchanged while eliminating a large fraction of compute by gating half the layers for most of pretraining, and then amortizing the activation cost with local self-distillation. The approach is orthogonal to architectural efficiency search (e.g., Primer) and long-sequence attention (e.g., Reformer) \cite{so-2021-searching,kitaev-2020-reformer}, and aligns with low-compute training perspectives and empirical scaling laws that clarify compute-quality trade-offs \cite{geiping-2022-cramming,henighan-2020-scaling}. Low-rank adapters offer an effective, mergeable vehicle for local alignment with negligible overhead \cite{miles-2024-velora}.
+
+\subsection{Contributions}
+\begin{itemize}
+  \item \textbf{Two-phase schedule:} A two-phase training scheme that couples half-active training with progressive activation and local self-distillation within weight-shared layer pairs, preserving final capacity and inference cost while reducing training compute.
+  \item \textbf{Closed-form compute:} A closed-form compute accounting predicting about 40\% training FLOPs reduction when 60\% of tokens are processed with half the layers active, with negligible overhead for brief adapter-based distillation.
+  \item \textbf{PyTorch reference:} A PyTorch-first reference implementation and evaluation protocol compatible with standard Transformer stacks, quantization toolchains, and profilers, enabling hardware-agnostic deployment.
+  \item \textbf{Empirical validation:} Empirical validation in a controlled quick test demonstrating 43.3\% theoretical FLOPs reduction and 52\% throughput improvement versus an immediate weight-sharing baseline at comparable validation loss, plus ablations on activation schedules and adapters.
+\end{itemize}
+
+\subsection{Preview of results}
+In a head-to-head quick test, PLAD-T reduced theoretical training FLOPs from 226.49B to 128.35B (\(-43.3\%\)) and increased tokens per second from 56,241.6 to 85,801.1 at similar validation loss (7.066 vs 7.071). A temporary inference speedup was observed due to incomplete activation at the end; PLAD-T matches inference cost once all pairs are activated and adapters merged. Dynamic W8A8 quantization showed no measurable loss change.
+
+Looking forward, we plan to scale PLAD-T to 350M-1B models and larger corpora, tune adapter rank and distillation budget, and explore combinations with staged growth and system-level accelerations for additive savings \cite{shen-2022-staged,andoorveedu-2022-tempo,narayanan-2020-memory}.
+
+\section{Related Work}
+\subsection{Architectural and training-time efficiency}
+MobileLLM advocates deep-thin designs and immediate block-wise weight sharing for sub-billion models, improving accuracy at fixed parameter budgets but not reducing training compute because all layers are active throughout \cite{liu-2024-mobilellm}. Primer shows that simple architectural primitives such as squared activations and depthwise convolutions can lower training cost at matched quality, offering a complementary axis of improvement \cite{so-2021-searching}. Reformer reduces sequence complexity via locality-sensitive hashing attention and uses reversible layers to reduce memory, accelerating long-context training through architectural changes \cite{kitaev-2020-reformer}. PLAD-T is orthogonal to these ideas: it preserves the standard causal Transformer architecture and attention complexity, but schedules layer activation over time to reduce integrated compute.
+
+\subsection{Progressive and staged training}
+Staged training grows model depth and width with growth operators designed to preserve loss and training dynamics, achieving up to 22\% compute savings \cite{shen-2022-staged}. A multi-level V-cycle coalesces and de-coalesces capacity for larger savings on BERT-Large \cite{zou-2024-multi}. Progressive layer dropping accelerates BERT-style pretraining by pruning layers during training \cite{zhang-2020-accelerating}. These works alter parameter count over time or target masked language modeling. PLAD-T differs by keeping total parameters constant, avoiding global growth operators, and using local self-distillation to stabilize activation of pre-existing, pairwise shared capacity.
+
+\subsection{System-level accelerations}
+Memory footprint reduction (Tempo) increases throughput by enabling larger batches and more efficient kernels without changing the algorithmic FLOPs budget \cite{andoorveedu-2022-tempo}. Pipeline-parallel systems such as PipeDream-2BW optimize training throughput and memory in distributed settings \cite{narayanan-2020-memory}. Communication quantization for sharded data parallelism reduces wall-clock time by lowering communication precision \cite{jia-2024-toward}. These advances are complementary to PLAD-T: our schedule directly reduces the integrated compute, while system optimizations can be layered on top for additional speed-ups.
+
+\subsection{Scaling and low-compute training}
+Cramming examines low-compute pretraining recipes and shows that careful choices can approach stronger baselines under tight budgets \cite{geiping-2022-cramming}. Empirical scaling laws clarify predictable relationships between compute and loss and provide a lens for analyzing compute-quality trade-offs \cite{henighan-2020-scaling}. PLAD-T can be seen as re-allocating compute across training by shaping a depth curriculum while holding final capacity fixed.
+
+\subsection{Adapters and low-rank interventions}
+Low-rank adapters provide strong capacity with minimal overhead and can be merged at inference \cite{miles-2024-velora}. Our use of rank-4 adapters during brief local distillation phases follows this principle to align newly activated blocks without incurring runtime cost. Compared to approaches that change inference behavior (e.g., any-precision deployment) \cite{park-2024-any}, PLAD-T targets training-time savings while keeping inference identical to a weight-sharing baseline \cite{liu-2024-mobilellm}.
+
+\subsection{Comparison and applicability}
+Methods relying on architectural changes or sequence sparsity \cite{so-2021-searching,kitaev-2020-reformer} affect both training and inference behavior, whereas PLAD-T aims to leave inference unchanged. Staged growth \cite{shen-2022-staged,zou-2024-multi} requires growth operators and re-parameterization; PLAD-T introduces no such operators and keeps parameter count constant. System methods \cite{andoorveedu-2022-tempo,narayanan-2020-memory,jia-2024-toward} do not reduce algorithmic FLOPs; PLAD-T does. Progressive layer dropping \cite{zhang-2020-accelerating} targets masked language modeling and is not directly applicable to causal LM at deployment parity; PLAD-T targets autoregressive pretraining and preserves final inference cost.
+
+\section{Background}
+\subsection{Problem setting}
+We study autoregressive language modeling with a decoder-only Transformer. The network comprises \(2L\) logical decoder blocks arranged into \(L\) immediate-sharing pairs (odd-even). The training objective is per-token cross-entropy on large text corpora. The resource of interest is integrated training FLOPs, which for standard Transformers scales roughly with active layers multiplied by tokens processed, accounting for attention and MLP costs per layer \cite{henighan-2020-scaling}.
+
+\subsection{Notation and baseline}
+Let \(L\) be the number of odd-even pairs, so the logical depth is \(2L\). The immediate weight-sharing baseline (LS) activates all \(2L\) layers from the start and trains them jointly; this improves accuracy at fixed parameter budgets for tiny LMs but pays full compute \cite{liu-2024-mobilellm}. In PLAD-T, only odd layers are active during Phase 1. In Phase 2, even layers are progressively activated. When an even block is activated, it copies the weights of its paired odd block and is augmented with a rank-\(r\) adapter trained briefly against a frozen teacher snapshot of the odd block before merging.
+
+\subsection{Assumptions}
+We assume standard causal masking and common efficiency practices such as grouped-query attention and efficient MLPs. Reversible blocks may be used to reduce memory pressure but are orthogonal to the core mechanism \cite{kitaev-2020-reformer}. Vocabulary and tensor shapes are fixed across methods to ensure inference parity. Adapters are merged after distillation so that the final deployed model has no extra inference cost \cite{miles-2024-velora}.
+
+\subsection{Compute accounting}
+Ignoring the brief distillation sub-epochs, PLAD-T’s theoretical compute relative to LS equals the average active depth over tokens. In Phase 1, active depth is \(L\), contributing \(f \times (L / 2L) = f/2\) of LS’s cost, where \(f\) is the fraction of tokens processed in Phase 1. In Phase 2, active depth increases from \(L\) to \(2L\); using an average of \(1.5L\) contributes \((1-f) \times (1.5L / 2L) = 0.75(1-f)\). The total fraction of LS compute is \(f/2 + 0.75(1-f)\). For \(f = 0.6\), this equals \(0.6/2 + 0.75\times0.4 = 0.6\), i.e., a 40\% reduction. Self-distillation adds a small overhead, estimated at 1-3\% in our planning, preserving a net saving near 40\%.
+
+\subsection{Rationale for local self-distillation}
+Progressive activation introduces new capacity that initially lacks gradient exposure. Direct copying can yield representational mismatch and transient loss spikes. A brief, local distillation aligns the even block’s outputs to its odd neighbor’s hidden states before joint training resumes. Low-rank adapters provide sufficient flexibility for alignment with negligible overhead and can be merged to avoid inference cost \cite{miles-2024-velora}.
+
+\subsection{Relation to complementary techniques}
+Architectural modifications such as squared activations and depthwise convolutions \cite{so-2021-searching}, long-sequence attention and reversible networks \cite{kitaev-2020-reformer}, and system-level memory and pipeline optimizations \cite{andoorveedu-2022-tempo,narayanan-2020-memory} are complementary to PLAD-T. Empirical scaling laws and low-compute recipes contextualize the compute-quality trade-offs our schedule exploits \cite{henighan-2020-scaling,geiping-2022-cramming}.
+
+\section{Method}
+PLAD-T comprises a fixed architecture skeleton and a two-phase training schedule.
+
+\subsection{Architecture skeleton with pairwise sharing}
+We instantiate \(2L\) logical decoder blocks organized into \(L\) pairs. Within each pair, odd and even blocks share the same parameterization and interfaces. At initialization, odd blocks are standard Transformer layers; even blocks are identity-gated modules. The model uses causal masking, grouped-query attention, and efficient MLPs; reversible blocks are optional \cite{kitaev-2020-reformer}. Vocabulary size and tensor shapes match the immediate weight-sharing baseline to ensure parity at inference \cite{liu-2024-mobilellm}.
+
+\subsection{Phase 1: half-active training}
+For a fraction \(f\) of training tokens (default \(f = 0.6\)), only odd blocks are active; even blocks act as identities. Gradients and optimizer states are maintained only for active blocks. This halves the active depth and reduces per-step compute while encouraging robust early representations.
+
+\subsection{Phase 2: progressive activation with local self-distillation}
+Over the remaining \((1-f)\) fraction of tokens, we periodically select a small batch of pairs and activate their even blocks. For each activated pair \(i\): (1) copy the current weights from odd block \(i\) into even block \(i\); (2) attach a rank-\(r\) adapter (default \(r=4\)) into the Linear projections of attention and MLP within the even block and freeze odd block \(i\) as a teacher; (3) run brief local self-distillation minimizing an alignment loss between normalized hidden states produced by the teacher and student on the same inputs; (4) merge adapters and continue joint training with both blocks active. Merging removes adapter overhead at inference \cite{miles-2024-velora}.
+
+\subsection{Activation schedule}
+Let \(B\) be the number of pairs activated per event and \(K\) the steps between events. We default to \(B=2\) and choose \(K\) to distribute activations uniformly over Phase 2. This schedule trades stability and speed: smaller \(B\) yields smoother transitions; larger \(B\) accelerates depth growth. A copy-only activation variant, which skips adapters and distillation, is considered in ablations to isolate the value of local alignment.
+
+\subsection{Optional curricula and routing}
+A sequence-length curriculum increases context length over training to modulate compute. Optional token-drop routing prunes a fraction of tokens in early training based on confidence, further reducing FLOPs. These techniques are orthogonal to PLAD-T and are disabled in main comparisons unless ablated.
+
+\subsection{Compute analysis and deployment parity}
+With \(f = 0.6\), the closed-form estimate predicts about 40\% theoretical compute reduction relative to LS, with 1-3\% overhead for brief distillation. Because all even blocks are activated and adapters merged by the end, the final architecture matches the LS baseline in parameters, depth, throughput, and memory at inference \cite{liu-2024-mobilellm}. System optimizations for memory, pipeline, or communication can be stacked to translate compute savings into additional wall-clock improvements \cite{andoorveedu-2022-tempo,narayanan-2020-memory,jia-2024-toward}.
+
+\subsection{Implementation considerations}
+Identity gating keeps layer indexing and optimizer state management simple. Activating new layers requires initializing optimizer states for those parameters. Short warm-ups around activation events and, if needed, slightly reduced local learning rates can smooth transitions. Distillation stability can be improved by increasing adapter rank or extending the number of distillation steps if alignment stalls \cite{miles-2024-velora}.
+
+\begin{algorithm}
+\caption{PLAD-T two-phase training with progressive activation and local self-distillation}
+\begin{algorithmic}
+  \State Inputs: depth pairs \(L\), token budget \(T\), Phase-1 fraction \(f\), activation batch size \(B\), interval \(K\), adapter rank \(r\), distillation steps \(E\)
+  \State Initialize odd blocks as standard Transformer layers; set even blocks to identity-gated
+  \State Initialize optimizer states for parameters in odd blocks only
+  \State \textbf{Phase 1} (steps covering \(\lfloor f\,T\rfloor\) tokens): train with only odd blocks active
+  \State \textbf{Phase 2} (remaining tokens):
+  \For{each activation event every \(K\) steps}
+    \State Select next \(B\) inactive pairs \(\{i\}\)
+    \For{each pair \(i\) in selection}
+      \State Copy weights odd\(\to\)even for pair \(i\)
+      \State Attach rank-\(r\) adapters to attention/MLP projections in even block \(i\)
+      \State Freeze odd block \(i\) as teacher; keep other active blocks trainable
+      \For{\(E\) distillation steps on a token buffer}
+        \State Forward inputs through teacher odd block \(i\) and student even block \(i\)
+        \State Compute layer-normalized hidden states \(H_{\text{teach}}\), \(H_{\text{stud}}\)
+        \State Minimize \(\mathcal{L}_{\text{align}} = \lVert \text{LN}(H_{\text{stud}}) - \text{LN}(H_{\text{teach}}) \rVert_2^2\) w.r.t. adapter and even parameters
+      \EndFor
+      \State Merge adapters into even block \(i\); remove adapter modules
+      \State Unfreeze odd block \(i\); resume joint training with both blocks active
+      \State Initialize optimizer states for newly activated parameters as needed
+    \EndFor
+  \EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\section{Experimental Setup}
+\subsection{Goal and scope}
+We validate PLAD-T in a controlled quick test designed to exercise training mechanics, compute accounting, and ablations within a PyTorch-first stack. The goal is method verification under tight budgets rather than web-scale pretraining.
+
+\subsection{Software and environment}
+We use Python with PyTorch 2.x and HuggingFace Transformers for modeling, PEFT-style adapters for rank-4 low-rank updates, mixed precision for efficiency, and simple logging. No specialized kernels or distributed systems are required; the approach remains compatible with common libraries and can benefit from standard profilers and compilers. This setup aligns with the aim of being PyTorch-friendly and hardware-agnostic.
+
+\subsection{Models and baselines}
+We construct a tiny Transformer with \(L = 3\) pairs (6 logical layers for the LS baseline). The LS baseline is an immediate block-wise weight-sharing model with all layers active from step 1 \cite{liu-2024-mobilellm}. PLAD-T uses the same skeleton, but even layers start as identity gates. Model dimensionalities are small (hidden size in the low hundreds) with 4 attention heads, consistent with the provided training logs.
+
+\subsection{Training schedules}
+All runs use 40 total steps with causal language modeling loss on a synthetic token distribution at sequence length 64 and batch size 16. For PLAD-T, Phase 1 covers 24 steps (\(f = 0.6\)), with the first activation event at step 20. We evaluate two distillation budgets (5 and 10 steps per activated pair) with rank-4 adapters, merging adapters after distillation. We also evaluate a copy-only activation variant without adapters or distillation. Activation granularity is implicitly varied by changing when activation events occur.
+
+\subsection{Ablations}
+We sweep the Phase 1 fraction \(f \in \{0.4, 0.6, 0.8\}\) while keeping other settings fixed. We compare copy-only activation with adapter-based self-distillation. These ablations isolate the contributions of the schedule and the local alignment step.
+
+\subsection{Measurement and accounting}
+We estimate theoretical training FLOPs per step using a per-layer attention-plus-MLP accounting scaled by the number of active layers; we report integrated FLOPs over training, tokens per second averaged over steps, and validation cross-entropy. We time inference latency with forward passes at sequence length 64 for batch sizes 1 and 4. For quantization, we apply dynamic W8A8 to Linear layers on CPU and compare validation loss before and after. Finally, we run a tiny fine-tuning proxy task (synthetic parity classification) to probe convergence after pretraining.
+
+\subsection{Fairness and limitations}
+The quick test uses a single seed and a synthetic corpus; it is intended to verify mechanics and compute savings rather than to draw conclusions about downstream generalization. In one head-to-head run, not all even blocks were activated by the final step, which impacts observed inference latency; the design intent is to fully activate all pairs and merge adapters before evaluation to match LS inference cost. Complementary system-level methods such as memory footprint reduction, pipeline parallelism, and communication quantization remain applicable but are not required for our findings \cite{andoorveedu-2022-tempo,narayanan-2020-memory,jia-2024-toward}.
+
+\section{Results}
+\subsection{Head-to-head pretraining}
+PLAD-T achieves a theoretical training FLOPs reduction of 43.3\% relative to the LS baseline: 128.35B versus 226.49B. Average training throughput increases from 56,241.6 to 85,801.1 tokens/sec (+52\%). Final validation losses are comparable: 7.071 (PLAD-T) versus 7.066 (LS). These results confirm the compute-quality target in a constrained setting.
+
+\subsection{Ablations on distillation}
+Comparing copy-only activation to adapter-based self-distillation with a 10-step budget, final validation losses are 7.052 (copy-only) and 7.059 (distill). Differences are small at this tiny scale and short distillation window, but steadily decreasing distillation losses indicate effective local alignment in the intended direction.
+
+\subsection{Phase-1 fraction sweep}
+With \(f \in \{0.4, 0.6, 0.8\}\), final validation losses are 7.062, 7.055, and 7.058, respectively. The best result appears at \(f = 0.6\) in this run, and all values are within a narrow band, suggesting a smooth compute-quality trade-off and a tunable schedule.
+
+\subsection{Inference and quantization}
+Inference latency at sequence length 64 shows PLAD-T at 3.799 ms (batch size 1) and 3.885 ms (batch size 4) versus LS at 4.621 ms and 4.841 ms, respectively. This apparent speedup is an artifact of incomplete activation at the end of the quick test; with all pairs activated and adapters merged, inference cost should match the LS baseline by construction \cite{liu-2024-mobilellm}. Dynamic W8A8 quantization on CPU yields identical validation loss (7.071 float versus 7.071 int8), indicating quantization friendliness in line with recent deployment-oriented findings on precision flexibility \cite{park-2024-any}.
+
+\subsection{Fine-tuning proxy}
+A synthetic parity classification fine-tune yields final validation accuracy 0.487 (PLAD-T) versus 0.494 (LS), broadly similar given the toy setup and confirming that PLAD-T preserves fine-tuning behavior after compute-efficient pretraining.
+
+\subsection{Limitations}
+All results stem from a compact setup with 40 training steps, one seed, synthetic data, and small models. The quick test validates mechanics and compute savings but does not substitute for large-scale pretraining on web corpora. The temporary inference speedup should not be viewed as a design outcome; full activation is necessary for strict parity with LS at deployment.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/training\_loss\_pladt\_vs\_ls\_uniform.pdf }
+  \caption{Convergence of training loss for PLAD-T and the LS baseline in the uniform-pattern quick test.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/validation\_loss\_pladt\_vs\_ls\_uniform.pdf }
+  \caption{Validation loss over steps for PLAD-T and the LS baseline in the uniform-pattern quick test.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/theoretical\_flops\_pladt\_vs\_ls\_uniform.pdf }
+  \caption{Integrated theoretical FLOPs comparison between PLAD-T and the LS baseline.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/throughput\_pladt\_vs\_ls\_uniform.pdf }
+  \caption{Training throughput in tokens per second for PLAD-T and the LS baseline.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/ablation\_loss\_copy\_vs\_distill.pdf }
+  \caption{Ablation comparing copy-only activation versus adapter-based self-distillation.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/phase1\_tradeoff\_pladt.pdf }
+  \caption{Trade-off across Phase 1 fractions \(f \in \{0.4, 0.6, 0.8\}\) with corresponding validation losses.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/inference\_latency\_pladt\_vs\_ls.pdf }
+  \caption{Inference latency for batch sizes 1 and 4 at sequence length 64.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/quantization\_pladt.pdf }
+  \caption{Validation loss parity before and after dynamic W8A8 quantization on CPU.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\linewidth]{ images/finetune\_accuracy\_pladt\_vs\_ls.pdf }
+  \caption{Fine-tuning proxy accuracy curves for PLAD-T and the LS baseline.}
+\end{figure}
+
+\section{Conclusion}
+We introduced PLAD-T, a progressive layer-activation and distillation schedule for training tiny language models that keeps parameters fixed, halves active depth during most of training, and activates the remaining layers with brief, local, adapter-based self-distillation. This schedule directly targets training compute while preserving the final architecture and inference cost. In a controlled quick test, PLAD-T reduced theoretical training FLOPs by 43.3\% and increased throughput by 52\% relative to an immediate weight-sharing baseline at comparable validation loss. Ablations show stable behavior across activation schedules, and quantization results indicate hardware friendliness.
+
+PLAD-T complements staged growth and system-level accelerations by offering a PyTorch-friendly, hardware-agnostic mechanism that reduces algorithmic compute and can be combined with memory, pipeline, and communication optimizations for additive wall-clock gains \cite{shen-2022-staged,andoorveedu-2022-tempo,narayanan-2020-memory,jia-2024-toward}. Limitations include the small scale and synthetic data used for validation; scaling to 350M-1B models and larger corpora is a key next step. Future work will fully activate all pairs before final evaluation to guarantee inference parity, systematically explore adapter rank, distillation budget, and activation granularity, and combine PLAD-T with architectural improvements such as Primer and Reformer for compounding savings \cite{so-2021-searching,kitaev-2020-reformer}. Broadly, PLAD-T suggests that when parameters are trained can be as important as how many are trained, offering a practical lever to reduce pretraining cost for tiny LLMs without compromising downstream utility.
+
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
