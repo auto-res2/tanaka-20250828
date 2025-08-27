@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/main.py", line 50, in <module>
+    main()
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/main.py", line 41, in main
+    run_quick_test(image_dir=images_dir)
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/evaluate.py", line 359, in run_quick_test
+    experiment2_ablations(image_dir=image_dir, pattern="uniform", total_steps=40, seed=321)
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/evaluate.py", line 278, in experiment2_ablations
+    logf = _train_plad(model, train_loader, val_loader, total_steps=total_steps,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/train.py", line 427, in train_plad
+    distill_even_block(model, pidx, data_iter, steps=distill_steps_per_pair, lr=5e-4, device=device)
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/train.py", line 284, in distill_even_block
+    batch = next(data_iter)
+            ^^^^^^^^^^^^^^^
+  File "/home/runner/work/_tool/Python/3.11.13/x64/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 734, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/_tool/Python/3.11.13/x64/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 789, in _next_data
+    index = self._next_index()  # may raise StopIteration
+            ^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/_tool/Python/3.11.13/x64/lib/python3.11/site-packages/torch/utils/data/dataloader.py", line 724, in _next_index
+    return next(self._sampler_iter)  # may raise StopIteration
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
