@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/main.py", line 50, in <module>
+    main()
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/main.py", line 41, in main
+    run_quick_test(image_dir=images_dir)
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/evaluate.py", line 360, in run_quick_test
+    experiment3_hardware_quant_finetune(image_dir=image_dir,
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/evaluate.py", line 324, in experiment3_hardware_quant_finetune
+    accs_plad, valacc_plad = simple_finetune(copy.deepcopy(pretrained_plad), ft_train_loader, ft_val_loader, steps=50, lr=5e-4, device=device)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/tanaka-20250828/tanaka-20250828/src/train.py", line 563, in simple_finetune
+    pred = clf_head(h_last)
+           ^^^^^^^^^^^^^^^^
+  File "/home/runner/work/_tool/Python/3.11.13/x64/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/_tool/Python/3.11.13/x64/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/_tool/Python/3.11.13/x64/lib/python3.11/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (16x1000 and 96x2)
