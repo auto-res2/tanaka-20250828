@@ -377,7 +377,7 @@ def train_plad(model: PLADTransformer,
     step_times: List[float] = []
     tokens_per_sec: List[float] = []
     flops_accum: List[float] = []
-    active_layers_hist: List[int] = []
+    active_layers_hist: List[float] = []
 
     seq_len = train_loader.dataset.seq_len
     d = model.cfg.d_model
@@ -548,7 +548,7 @@ def simple_finetune(model: PLADTransformer, train_loader, val_loader, steps: int
     if device is None:
         device = device_auto()
     model.to(device)
-    clf_head = nn.Linear(model.cfg.d_model, 2).to(device)
+    clf_head = nn.Linear(model.cfg.vocab_size, 2).to(device)
     opt = torch.optim.AdamW(list(model.parameters()) + list(clf_head.parameters()), lr=lr)
     accs: List[float] = []
     val_accs: List[float] = []
