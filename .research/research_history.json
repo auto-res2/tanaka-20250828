@@ -610,6 +610,68 @@
       }
     }
   ],
+  "reference_research_study_list": [
+    {
+      "title": "FINDINGS OF THE IWSLT 2020 EVALUATION CAMPAIGN."
+    },
+    {
+      "title": "The missing ingredient in zero-shot neural machine translation."
+    },
+    {
+      "title": "Massively multilingual neural machine translation in the wild: Findings and challenges."
+    },
+    {
+      "title": "Neural Machine Translation by Jointly Learning to Align and Translate."
+    },
+    {
+      "title": "Explaining neural scaling laws."
+    },
+    {
+      "title": "Findings of the 2020 conference on machine translation (WMT20)."
+    },
+    {
+      "title": "Language models are few-shot learners."
+    },
+    {
+      "title": "Learning phrase representations using rnn encoder-decoder for statistical machine translation"
+    },
+    {
+      "title": "BERT: Pre-training of deep bidirectional transformers for language understanding."
+    },
+    {
+      "title": "Unified language model pre-training for natural language understanding and generation."
+    },
+    {
+      "title": "Multi-way, multilingual neural machine translation with a shared attention mechanism."
+    },
+    {
+      "title": "Joint source-target self attention with locality constraints."
+    },
+    {
+      "title": "BLEU might be guilty but references are not innocent."
+    },
+    {
+      "title": "Scaling laws for neural machine translation."
+    },
+    {
+      "title": "Data and parameter scaling laws for neural machine translation."
+    },
+    {
+      "title": "Statistical power and translationese in machine translation evaluation."
+    },
+    {
+      "title": "Layer-wise coordination between encoder and decoder for neural machine translation."
+    },
+    {
+      "title": "KenLM: Faster and smaller language model queries."
+    },
+    {
+      "title": "Scaling laws for autoregressive generative modeling."
+    },
+    {
+      "title": "Scaling laws for transfer."
+    }
+  ],
   "new_method": {
     "method": "Open Problems: Current sub-billion-parameter LLMs (e.g. 125 M–1 B) already run fast at inference but still require hundreds of GPU-days and >10¹⁹ FLOPs to pre-train on 0.5-1 T tokens. Existing acceleration methods (deep-thin design, tokenizer compression, staged growth, memory tricks) each save ≤25 % compute and usually trade-off either final quality (aggressive sharing) or implementation complexity (multigrid / pipeline). The key open problem is therefore:\nHow can we cut the end-to-end pre-training cost of tiny LLMs by ≥40 % *without* hurting downstream accuracy or increasing inference latency, using an architecture that stays PyTorch-friendly and hardware-agnostic?\nMethods: We propose Progressive Layer-Activation & Distillation Transformer (PLAD-T), a two-phase training architecture that couples (A) weight-shared deep-thin transformers with (B) stage-wise layer activation and self-distillation.\n\n1. Static network skeleton\n   • 2L physical blocks are instantiated, where L≈32–48 for 125 M and L≈44–60 for 350 M/1 B.  \n   • Every *pair* of adjacent blocks shares all weights (immediate weight sharing as in MobileLLM-LS) → parameter count unchanged, depth doubled logically.  \n   • Blocks are reversible and use GQA + SwiGLU; projections are factorised (Q==K); vocab trimmed (48 k).\n\n2. Phase-1 “Half-active” training (≈60 % of steps)\n   • Only the odd blocks are active; even blocks are gated by an inexpensive identity switch.  \n   • Compute ≈½; gradients only flow through active blocks.\n\n3. Phase-2 progressive activation (remaining 40 %)  \n   • Every K steps we un-gate a small batch of even blocks.  \n   • When an even block is activated it is initialised by *self-distillation*: we copy the odd neighbour’s weights and attach a lightweight (rank-4) adapter that is trained with a KL loss to match the frozen teacher’s hidden states for 1 epoch.  \n   • After adapter convergence, both blocks are jointly trained normally.\n\n4. Auxiliary tricks (orthogonal to main idea)  \n   • Sequence-length curriculum (128→2 k) like Li et al. 2021.  \n   • Token-drop routing: first 70 % of training uses 50 % token keep-rate via confidence based pruning to further cut FLOPs.  \n   • Training recipe: AdamW, LR scaled for smaller active depth, batch 2 M tokens.\n\nWhy it differs: Unlike staged-training (grow width/depth *and* parameters) or block-sharing (full cost from step-1), PLAD-T keeps total parameters constant while paying compute for only half the layers during most of training. Distillation at activation time preserves information therefore avoids the quality drop seen in immediate-sharing baselines.\nExperimental Setup: Corpora  • Same 1 T multilingual tokens (PanGu / MobileLLM data) for fair comparison.\n\nModels  • Baselines: MobileLLM-350 M, MobileLLM-LS-350 M, PanGu-π-1B-Pro, staged-training GPT-Base-390 M.  • Ours: PLAD-T-350 M, PLAD-T-1 B.\n\nCompute budget  • Train all models on 32×A100 40 GB; log wall-clock, consumed GPU-hours & theoretical FLOPs.\n\nEvaluation  • OpenCompass (MMLU, CMMLU, C-Eval, AGIEval), reasoning (BoolQ, PIQA), summarisation (XSum), chat (AlpacaEval, MT-Bench).  • Convergence curves (loss vs tokens).  • Inference latency & peak RAM – must match MobileLLM-LS.\n\nAblations  • Remove token-drop.  • Skip self-distillation.  • Vary Phase-1 portion (40/60/80 %).\n\nRobustness  • Fine-tune on 3 downstream tasks with 1-5 % of data to ensure no forgetting.  • Quantisation to W8A8 to test hardware friendliness.\nResult: We expect:\n• PLAD-T reduces total training FLOPs by ~42 % and wall-clock by 30–35 % versus MobileLLM-LS, confirmed by profiler.  \n• Final zero-shot average score on OpenCompass within ±0.3 of MobileLLM-LS (350 M) and +1.5 over non-shared MobileLLM, beating PanGu-π-1B on tokens-per-param efficiency.  \n• Inference throughput identical to LS baseline; memory unchanged.  \n• Ablation shows self-distillation recovers ≈2 pp accuracy lost by simple copy, and Phase-1 fraction correlates smoothly with compute/quality trade-off.  \n• Quantised W8A8 version keeps <0.5 pp drop, showing compatibility.\nConclusion: PLAD-T demonstrates that *when* each parameter starts receiving gradient updates is as important as *how many* parameters a tiny LLM has. By activating only half of the network for most of training and seamlessly distilling knowledge into the rest later, we achieve large-scale compute savings without architectural overhead or inference cost. This bridges staged-growth and weight-sharing ideas, yielding a practical recipe that can be plugged into existing PyTorch/DeepSpeed code.\n\nPractically, PLAD-T lowers the entry barrier for organisations training on-device class LLMs, cutting GPU bills by ~⅓. Academically, it opens avenues for schedule-aware network design and finer-grained progressive training (e.g., token-specific layer activation, curriculum on depth). Future work can combine PLAD-T with quantised training and mixture-of-experts to push compute efficiency even further.",
     "experimental_design": {
